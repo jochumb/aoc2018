@@ -8,18 +8,19 @@ defmodule Day11 do
   end
 
   defp val(x,y,serial) do
-    val = ((x+10)*y+serial)*(x+10)
-    |> Integer.digits
-    |> Enum.reverse
-    |> Enum.drop(2)
-    |> hd
-    val - 5
+    ((x+10)*y+serial)*(x+10)
+      |> Integer.digits
+      |> Enum.reverse
+      |> Enum.drop(2)
+      |> hd
+      |> Kernel.-(5)
   end 
 
   def sum(map, count) do
-    for coord <- Map.keys(map),
+    for x <- 1..300-count+1,
+        y <- 1..300-count+1,
         into: %{},
-        do: {coord, sum(coord, map, count)}
+        do: {{x,y}, sum({x,y}, map, count)}
   end
 
   defp sum({x,y}, map, count) do
@@ -41,9 +42,8 @@ grid = Day11.grid(serial)
 grid |> Day11.sum(3) |> Day11.max |> fn {{x,y},_} -> "#{x},#{y}" end.() |> IO.puts
 
 3..20 #probably fine
-  |> Enum.map(fn n -> 
-      {n, grid |> Day11.sum(n) |> Day11.max}
-    end)
+  |> Enum.map(&(Task.async(fn -> {&1, grid |> Day11.sum(&1) |> Day11.max} end)))
+  |> Enum.map(&Task.await/1)
   |> Enum.max_by(fn {_,{ _, val}} -> val end)
   |> fn {n,{{x,y},_}} -> "#{x},#{y},#{n}" end.() 
   |> IO.puts
