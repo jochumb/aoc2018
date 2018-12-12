@@ -1,64 +1,52 @@
 defmodule Day03 do
-
-  def parse([_, _, dist, size]) do
-    [x, y] = parse_dist(dist)
-    [a, b] = parse_size(size)
-    for s <- x+1..x+a,
-        t <- y+1..y+b,
-        into: %{},
-        do: {{s,t}, 1}
+  def pointmap([_, id, _, _, x, y, _, dx, dy|_]) do
+    area({x,y,dx,dy}) |> Enum.map(&({&1, [id]})) |> Map.new
   end
 
-  def parse_dist(dist), do: dist |> String.trim(":") |> String.split(",") |> Enum.map(&String.to_integer/1)
-  def parse_size(size), do: size |> String.split("x") |> Enum.map(&String.to_integer/1)
+  def idarea([_, id, _, _, x, y, _, dx, dy|_]), do: {id, area({x,y,dx,dy})}
 
-  def combine(acc, next), do: Map.merge(acc, next, fn _k, v1, v2 -> v1 + v2 end)
-
-  def count(map), do: map |> Map.values |> Enum.filter(&(&1 > 1)) |> Enum.count
-
-  def parse2([id, _, dist, size]) do
-    [x, y] = parse_dist(dist)
-    [a, b] = parse_size(size)
-    for s <- x+1..x+a,
-        t <- y+1..y+b,
-        into: %{},
-        do: {{s,t}, String.trim(id, "#")}
+  defp area({x, y, dx, dy}) do
+    for px <- x+1..x+dx,
+        py <- y+1..y+dy,
+        into: MapSet.new,
+        do: {px,py}
   end
 
-  def find([h|t]), do: find(h, t, t, [h|t])
-  def find(c, [], _, _), do: c |> Map.values |> hd
-  def find(c, [h|t], l, o) do
-    id = c |> Map.values |> hd
-    other = h |> Map.values |> hd
-    if String.equivalent?(id, other) do
-      find(c, t, l, o)
-    else
-      count = c |> Map.values |> Enum.count
-      dropcount = c
-        |> Map.drop(Map.keys(h))
-        |> Map.values
-        |> Enum.count
-      if dropcount == count do
-        find(c, t, l, o)
-      else
-        find(l |> hd, o, l |> tl, o)
-      end
+  def combine(acc, next), do: Map.merge(acc, next, fn _k, v1, v2 -> v1 ++ v2 end)
+
+  def find([h|t]), do: find(h, t, Map.new(t), [h|t])
+  def find({id, _}, [], _, _), do: id
+  def find({id, ar}, [{oid, _}|t], r, a) when id == oid, do: find({id, ar}, t, r, a)
+  def find({id, area}, [{oid, oarea}|t], rem, all) do
+    case MapSet.intersection(area, oarea) |> MapSet.to_list do
+      [] -> find({id, area}, t, rem, all)
+      _  -> next(rem, all, id, oid)
     end
+  end
+
+  defp next(rem, all, del1, del2) do
+    still = rem |> Map.delete(del1) |> Map.delete(del2)
+    next = still |> Map.keys |> hd
+    find({next, Map.get(still, next)}, all, still, all)
   end
 end
 
-list = File.stream!("input")
+lines = File.stream!("input")
   |> Stream.map(&String.trim_trailing/1)
+  |> Stream.map(&(String.split(&1, ["#"," ","@",",","x",":"])))
+  |> Stream.map(&(&1 |> Enum.map(fn "" -> ""
+                                    n  -> String.to_integer(n) end)))
 
-list 
-  |> Stream.map(&String.split/1) 
-  |> Stream.map(&Day03.parse/1) 
-  |> Enum.reduce(&Day03.combine/2)
-  |> Day03.count
+lines
+  |> Stream.map(&Day03.pointmap/1)
+  |> Enum.reduce(&Day03.combine/2) 
+  |> Map.values
+  |> Enum.map(&Enum.count/1)
+  |> Enum.filter(&(&1 > 1)) 
+  |> Enum.count
   |> IO.puts
 
-list 
-  |> Stream.map(&String.split/1) 
-  |> Enum.map(&Day03.parse2/1) 
+lines
+  |> Enum.map(&Day03.idarea/1)
   |> Day03.find
   |> IO.puts
