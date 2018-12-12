@@ -47,14 +47,25 @@ translations = input
   |> Enum.map(&Day12.translation/1)
   |> Map.new
 
+# Part 1
 1..20 
 |> Enum.reduce(plants, fn _, acc -> Day12.next(acc, translations) end) 
 |> Enum.sum 
 |> IO.puts
 
-res = 1..2_000 
-|> Enum.reduce(plants, fn _, acc -> Day12.next(acc, translations) end) 
-|> Enum.sum
+# Part 2
+generations = 50_000_000_000
 
-magic_number = 73
-res + magic_number*(50_000_000_000-2000) |> IO.puts
+{sum, diff, generation} = 1..generations 
+|> Enum.reduce_while({plants, 0, 0}, 
+  fn g, {p, sum, diff} -> 
+    np = Day12.next(p, translations)
+    ns = Enum.sum(np)
+    nd = ns - sum
+    case diff == nd do
+      true  -> {:halt, {ns, nd, g}}
+      false -> {:cont, {np, ns, nd}}
+    end
+  end) 
+
+IO.puts sum + (generations-generation) * diff
