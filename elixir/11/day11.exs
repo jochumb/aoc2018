@@ -36,7 +36,10 @@ defmodule Day11 do
 
 end
 
-serial = System.argv() |> hd |> String.to_integer #8444
+serial = System.argv() |> fn 
+    [] -> ["8444"]
+    args -> args
+  end.() |> hd |> String.to_integer
 grid = Day11.grid(serial)
 
 grid |> Day11.sum(3) |> Day11.max |> fn {{x,y},_} -> "#{x},#{y}" end.() |> IO.puts

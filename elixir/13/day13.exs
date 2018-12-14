@@ -4,16 +4,16 @@ defmodule Day13 do
   def parse([], [h|t], _, y, map, carts), do: parse(h, t, 0, y+1, map, carts)
   def parse([h|t], r, x, y, map, carts) do
     case h do
-      " " -> parse(t, r, x+1, y, map, carts)
-      "|" -> parse(t, r, x+1, y, Map.put(map, {x,y}, :ns), carts)
-      "-" -> parse(t, r, x+1, y, Map.put(map, {x,y}, :ew), carts)
-      "+" -> parse(t, r, x+1, y, Map.put(map, {x,y}, :all), carts)
-      "/" -> parse(t, r, x+1, y, Map.put(map, {x,y}, :senw), carts)
+      " "  -> parse(t, r, x+1, y, map, carts)
+      "|"  -> parse(t, r, x+1, y, Map.put(map, {x,y}, :ns), carts)
+      "-"  -> parse(t, r, x+1, y, Map.put(map, {x,y}, :ew), carts)
+      "+"  -> parse(t, r, x+1, y, Map.put(map, {x,y}, :all), carts)
+      "/"  -> parse(t, r, x+1, y, Map.put(map, {x,y}, :senw), carts)
       "\\" -> parse(t, r, x+1, y, Map.put(map, {x,y}, :swne), carts)
-      "^" -> parse(t, r, x+1, y, Map.put(map, {x,y}, :ns), Map.put(carts, {x,y}, {:up, :none}))
-      "v" -> parse(t, r, x+1, y, Map.put(map, {x,y}, :ns), Map.put(carts, {x,y}, {:down, :none}))
-      ">" -> parse(t, r, x+1, y, Map.put(map, {x,y}, :ew), Map.put(carts, {x,y}, {:right, :none}))
-      "<" -> parse(t, r, x+1, y, Map.put(map, {x,y}, :ew), Map.put(carts, {x,y}, {:left, :none}))
+      "^"  -> parse(t, r, x+1, y, Map.put(map, {x,y}, :ns), Map.put(carts, {x,y}, {:up, :none}))
+      "v"  -> parse(t, r, x+1, y, Map.put(map, {x,y}, :ns), Map.put(carts, {x,y}, {:down, :none}))
+      ">"  -> parse(t, r, x+1, y, Map.put(map, {x,y}, :ew), Map.put(carts, {x,y}, {:right, :none}))
+      "<"  -> parse(t, r, x+1, y, Map.put(map, {x,y}, :ew), Map.put(carts, {x,y}, {:left, :none}))
     end
   end
 
